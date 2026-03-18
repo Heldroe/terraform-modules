@@ -29,7 +29,7 @@ tflint --init --config="$REPO_ROOT/.tflint.hcl"
 tflint --config="$REPO_ROOT/.tflint.hcl"
 
 echo "⚙️  Initializing..."
-terraform init -backend=false
+terraform init -backend=false -upgrade
 
 echo "✅ Validating..."
 terraform validate
