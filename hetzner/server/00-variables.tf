@@ -4,8 +4,8 @@ variable "name" {
 }
 
 variable "image" {
-  default     = "ubuntu-24.04"
   type        = string
+  default     = "ubuntu-24.04"
   description = "Image identifier."
 }
 
