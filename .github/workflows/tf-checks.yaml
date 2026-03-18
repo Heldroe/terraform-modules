@@ -1,6 +1,12 @@
 name: Terraform module checks
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.tf'
+      - '.tflint.hcl'
   pull_request:
     paths:
       - '**/*.tf'
