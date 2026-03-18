@@ -1,0 +1,56 @@
+#cloud-config
+---
+ssh_pwauth: false
+write_files:
+- content: |
+    token: "${cluster_token}"
+    %{ if cluster_peer_host != null }server: "https://${cluster_peer_host}:6443"%{ endif }
+    node-ip: "${private_ip}"
+    flannel-iface: "enp7s0" # Private Hetzner Cloud network interface
+    %{ if ! agent_mode }
+    write-kubeconfig-mode: "0644"
+    tls-san:
+      - "${server_name}"
+      - "${private_ip}"
+    cluster-init: true
+    %{ endif }
+    node-label:
+      - "topology.kubernetes.io/region=${hetzner_location}"
+  path: /etc/rancher/k3s/config.yaml
+- content: |
+    configs:
+      registry-1.docker.io:
+        auth:
+          username: ${dockerhub_username}
+          password: ${dockerhub_token}
+  path: /etc/rancher/k3s/registries.yaml
+- content: ""
+  path: /var/lib/rancher/k3s/server/manifests/traefik.yaml.skip # Disable Traefik
+runcmd:
+  # Netbird
+   %{ if netbird_setup_key != null }
+  - curl -fsSL https://pkgs.netbird.io/install.sh | sh
+  - netbird up --setup-key ${netbird_setup_key} --allow-server-ssh --enable-ssh-root
+  %{ endif }
+  # Tailscale
+  %{ if tailscale_auth_key != null }
+  - mkdir -p --mode=0755 /usr/share/keyrings
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+  - apt-get update
+  - apt-get install -y tailscale unzip
+  - tailscale up --ssh --force-reauth -authkey ${tailscale_auth_key}
+  %{ endif }
+  # K3S
+  - wget https://github.com/k3s-io/k3s/releases/download/${k3s_version}%2Bk3s1/k3s-arm64 -O k3s
+  - mv k3s /usr/local/bin/k3s && chmod +x /usr/local/bin/k3s
+  - wget https://get.k3s.io/ -O install-k3s.sh
+  - INSTALL_K3S_SKIP_DOWNLOAD=true%{ if agent_mode } INSTALL_K3S_EXEC="agent"%{ endif } bash install-k3s.sh
+  - rm install-k3s.sh
+  %{ if ! agent_mode }
+  # AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+  - curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+  - unzip awscliv2.zip
+  - ./aws/install && rm -rf ./aws
+  - AWS_ACCESS_KEY_ID=${aws_access_key_id} AWS_SECRET_ACCESS_KEY=${aws_secret_access_key} AWS_DEFAULT_REGION=${aws_region} aws ssm put-parameter --name ${ssm_parameter_name} --type SecureString --overwrite --value file:///etc/rancher/k3s/k3s.yaml
+  %{ endif }

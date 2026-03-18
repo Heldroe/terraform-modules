@@ -1,0 +1,64 @@
+name: Terraform module checks
+
+on:
+  pull_request:
+    paths:
+      - '**/*.tf'
+      - '.tflint.hcl'
+
+jobs:
+  # 1. Dynamically find which modules changed in this PR
+  find-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.changed-files.outputs.all_changed_files }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Required to accurately detect changed files
+
+      - name: Get changed module directories
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          files: '**/*.tf'
+          dir_names: true     # Returns directory names instead of full file paths
+          json: true          # Formats the output as a JSON array ['module_a', 'module_b']
+          escape_json: false
+
+  # 2. Run checks concurrently for each changed module
+  check:
+    needs: find-changes
+    # Only run if there are actual changes detected
+    if: ${{ needs.find-changes.outputs.matrix != '[]' && needs.find-changes.outputs.matrix != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false        # Don't cancel the whole pipeline if one module fails
+      matrix:
+        module: ${{ fromJSON(needs.find-changes.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: latest
+
+      # Cache the provider plugins downloaded during terraform init
+      - name: Cache Terraform Providers
+        uses: actions/cache@v5
+        with:
+          path: .terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-plugin-cache-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-plugin-cache-
+
+      - name: Run Checks for ${{ matrix.module }}
+        run: |
+          ./scripts/check.sh ${{ matrix.module }}

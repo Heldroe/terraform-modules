@@ -1,0 +1,6 @@
+# Cache directories
+.terraform.d
+.terraform
+
+# Lock files
+.terraform.lock.hcl
