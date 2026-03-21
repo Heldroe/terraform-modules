@@ -25,11 +25,11 @@ terraform fmt -check
 
 echo "🔍 Linting (tflint)..."
 # Explicitly point to the root config so tflint finds your custom plugins
-tflint --init --config="$REPO_ROOT/.tflint.hcl"
+tflint --init --config="$REPO_ROOT/.tflint.hcl" > /dev/null # Silence when plugins are already installed
 tflint --config="$REPO_ROOT/.tflint.hcl"
 
 echo "⚙️  Initializing..."
-terraform init -backend=false -upgrade
+terraform init -backend=false -upgrade > /dev/null # Silence noisy stdout
 
 echo "✅ Validating..."
 terraform validate

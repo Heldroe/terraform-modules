@@ -4,3 +4,6 @@
 
 # Lock files
 .terraform.lock.hcl
+
+# Generated files
+target/

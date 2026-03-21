@@ -39,6 +39,12 @@ variable "firewall_ids" {
   description = "List of firewall IDs to attach to the server."
 }
 
+variable "api_server_domain" {
+  type        = string
+  default     = null
+  description = "Kubernetes API server domain to add to the API server certificate."
+}
+
 # Tailscale
 
 variable "use_tailscale" {
@@ -63,7 +69,19 @@ variable "disable_tailscale_key_expiry" {
 variable "use_netbird" {
   type        = bool
   default     = false
-  description = "Set to true to enable Netbird. Cannot be true if use_tailscale is true."
+  description = "Set to true to enable NetBird. Cannot be true if use_tailscale is true."
+}
+
+variable "netbird_group_ids" {
+  type        = list(string)
+  default     = []
+  description = "List of NetBird group IDs to assign to the server."
+}
+
+variable "netbird_domain" {
+  type        = string
+  default     = "netbird.cloud"
+  description = "NetBird DNS suffix for peer hostnames."
 }
 
 check "vpn_exclusivity" {

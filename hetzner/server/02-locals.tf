@@ -5,5 +5,7 @@ locals {
   peer_ips  = [for peer in local.peers : peer.labels.private_ip]
   peer_host = length(local.peer_ips) > 0 ? local.peer_ips[0] : null
 
+  api_server_domain = coalesce(var.api_server_domain, "api.${var.cluster_name}")
+
   cluster_token = length(local.peers) > 0 ? local.peers[0].labels.cluster_token : random_password.cluster_token[0].result
 }

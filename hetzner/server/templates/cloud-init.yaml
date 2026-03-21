@@ -10,6 +10,7 @@ write_files:
     %{ if ! agent_mode }
     write-kubeconfig-mode: "0644"
     tls-san:
+      - "${api_server_domain}"
       - "${server_name}"
       - "${private_ip}"
     cluster-init: true

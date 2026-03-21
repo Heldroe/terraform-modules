@@ -12,7 +12,8 @@ resource "hcloud_server" "node" {
   user_data = templatefile(
     "${path.module}/templates/cloud-init.yaml",
     {
-      server_name           = var.use_netbird ? "${var.name}.netbird.cloud" : var.name
+      server_name           = var.use_netbird ? "${var.name}.${var.netbird_domain}" : var.name
+      api_server_domain     = local.api_server_domain
       hetzner_location      = var.location
       k3s_version           = var.k3s_version
       agent_mode            = var.agent_mode
