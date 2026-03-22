@@ -15,14 +15,14 @@ else
 endif
 
 test-all:
-	@echo "Testing ALL modules sequentially..."
+	@echo "Testing all modules..."
 	@MODS=$$(find . -type f -name "*.tf" -not -path "*/.terraform/*" -exec dirname {} \; | sort -u); \
 	for mod in $$MODS; do \
 		./scripts/check.sh $$mod; \
 	done
 
 test-modified:
-	@echo "Testing MODIFIED modules..."
+	@echo "Testing modified modules..."
 	@MODS=$$( \
 		{ \
 			git ls-files --others --modified --exclude-standard; \
