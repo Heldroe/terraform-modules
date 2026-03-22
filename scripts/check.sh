@@ -28,7 +28,7 @@ echo "🔍 Linting (tflint)..."
 tflint --init --config="$REPO_ROOT/.tflint.hcl" > /dev/null # Silence when plugins are already installed
 tflint --config="$REPO_ROOT/.tflint.hcl"
 
-echo "⚙️  Initializing..."
+echo "⚙️ Initializing..."
 terraform init -backend=false -upgrade > /dev/null # Silence noisy stdout
 
 echo "✅ Validating..."
