@@ -42,6 +42,18 @@ variable "hostnames" {
   description = "Gateway hostnames configuration."
 }
 
+variable "http_port" {
+  type        = number
+  default     = 80
+  description = "HTTP port."
+}
+
+variable "https_port" {
+  type        = number
+  default     = 443
+  description = "HTTPS port."
+}
+
 variable "redirect_http_to_https" {
   type        = bool
   default     = false
@@ -76,4 +88,14 @@ variable "x_forwarded_for_trusted_hops" {
   type        = number
   default     = 1
   description = "Number of trusted hops for the X-Forwarded-For header."
+}
+
+variable "secret_headers" {
+  type = map(object({
+    header = string
+    values = list(string)
+  }))
+  sensitive   = true
+  default     = {}
+  description = "Map of name => secret headers enforced to accept ingress traffic."
 }

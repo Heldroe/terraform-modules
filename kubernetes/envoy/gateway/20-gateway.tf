@@ -90,7 +90,7 @@ resource "kubernetes_manifest" "gateway" {
           {
             name     = "http"
             protocol = "HTTP"
-            port     = 80
+            port     = var.http_port
           },
         ] : [],
         [
@@ -98,7 +98,7 @@ resource "kubernetes_manifest" "gateway" {
           {
             name     = "https"
             protocol = "HTTPS"
-            port     = 443
+            port     = var.https_port
             hostname = hostname
             allowedRoutes = {
               namespaces = {
@@ -120,7 +120,7 @@ resource "kubernetes_manifest" "gateway" {
           {
             name     = "https-wildcard"
             protocol = "HTTPS"
-            port     = 443
+            port     = var.https_port
             hostname = "*.${hostname}"
             allowedRoutes = {
               namespaces = {
@@ -202,13 +202,52 @@ resource "kubernetes_manifest" "x_forwarded_for" {
         {
           group = "gateway.networking.k8s.io"
           kind  = "Gateway"
-          name  = "public-gateway"
+          name  = var.name
         },
       ]
       clientIPDetection = {
         xForwardedFor = {
           numTrustedHops = var.x_forwarded_for_trusted_hops
         }
+      }
+    }
+  }
+}
+
+resource "kubernetes_manifest" "secret_headers" {
+  count = length(var.secret_headers) > 0 ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.envoyproxy.io/v1alpha1"
+    kind       = "SecurityPolicy"
+    metadata = {
+      name      = "${var.name}-secret-headers"
+      namespace = local.namespace
+    }
+    spec = {
+      targetRefs = [
+        {
+          group = "gateway.networking.k8s.io"
+          kind  = "Gateway"
+          name  = var.name
+        },
+      ]
+      authorization = {
+        defaultAction = "Deny"
+        rules = [
+          for name, config in var.secret_headers : {
+            name   = name
+            action = "Allow"
+            principal = {
+              headers = [
+                {
+                  name   = config.header
+                  values = config.values
+                },
+              ]
+            }
+          }
+        ]
       }
     }
   }
