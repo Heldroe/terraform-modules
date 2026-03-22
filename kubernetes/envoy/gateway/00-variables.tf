@@ -65,3 +65,15 @@ variable "clusterip_address" {
   default     = null
   description = "Static IP address when using ClusterIP."
 }
+
+variable "accept_x_forwarded_for" {
+  type        = bool
+  default     = false
+  description = "Whether to accept the X-Forwarded-For header to determine source IP."
+}
+
+variable "x_forwarded_for_trusted_hops" {
+  type        = number
+  default     = 1
+  description = "Number of trusted hops for the X-Forwarded-For header."
+}

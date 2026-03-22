@@ -186,3 +186,30 @@ resource "kubernetes_manifest" "http_to_https_redirect" {
     }
   }
 }
+
+resource "kubernetes_manifest" "x_forwarded_for" {
+  count = var.accept_x_forwarded_for ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.envoyproxy.io/v1alpha1"
+    kind       = "ClientTrafficPolicy"
+    metadata = {
+      name      = "${var.name}-x-forwarded-for"
+      namespace = local.namespace
+    }
+    spec = {
+      targetRefs = [
+        {
+          group = "gateway.networking.k8s.io"
+          kind  = "Gateway"
+          name  = "public-gateway"
+        },
+      ]
+      clientIPDetection = {
+        xForwardedFor = {
+          numTrustedHops = var.x_forwarded_for_trusted_hops
+        }
+      }
+    }
+  }
+}

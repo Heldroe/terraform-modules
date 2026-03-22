@@ -3,6 +3,11 @@ output "private_ip" {
   value       = var.private_ip
 }
 
+output "public_ipv4" {
+  description = "Public IPv4 of the server."
+  value       = hcloud_server.node.ipv4_address
+}
+
 output "cluster_token" {
   description = "Secret k3s cluster token to join the cluster."
   sensitive   = true
