@@ -23,3 +23,8 @@ output "peer_host" {
   description = "Peer host used for k3s initialization."
   value       = local.peer_host
 }
+
+output "bunnynet_accelerated_pullzone_id" {
+  description = "Bunny.net accelerated pull zone ID, created by the DNS record."
+  value       = var.bunnynet_dns_zone_id != null ? bunnynet_dns_record.server[0].accelerated_pullzone : null
+}

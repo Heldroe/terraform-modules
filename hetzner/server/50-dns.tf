@@ -6,7 +6,7 @@ resource "bunnynet_dns_record" "server" {
   name  = ""
   type  = "A"
 
-  accelerated = false
+  accelerated = true
   enabled     = true
 
   # This checks a non-5xx response on port 80 every 30s (non configurable)
