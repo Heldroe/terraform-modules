@@ -54,6 +54,12 @@ variable "https_port" {
   description = "HTTPS port."
 }
 
+variable "enable_http_healthcheck" {
+  type        = bool
+  default     = false
+  description = "Whether to enable an healthcheck response on the HTTP port (used by Bunny.net DNS health checks)."
+}
+
 variable "redirect_http_to_https" {
   type        = bool
   default     = false

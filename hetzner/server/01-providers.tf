@@ -12,6 +12,10 @@ terraform {
       source  = "netbirdio/netbird"
       version = "0.0.9"
     }
+    bunnynet = {
+      source  = "BunnyWay/bunnynet"
+      version = ">= 0.13"
+    }
     random = {
       source  = "hashicorp/random"
       version = "3.8.1"

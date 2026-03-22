@@ -86,7 +86,7 @@ resource "kubernetes_manifest" "gateway" {
     spec = merge({
       gatewayClassName = var.name
       listeners = concat(
-        var.redirect_http_to_https ? [
+        var.enable_http_healthcheck || var.redirect_http_to_https ? [
           {
             name     = "http"
             protocol = "HTTP"
@@ -248,6 +248,91 @@ resource "kubernetes_manifest" "secret_headers" {
             }
           }
         ]
+      }
+    }
+  }
+}
+
+resource "kubernetes_manifest" "http_health_check" {
+  count = var.enable_http_healthcheck ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+    metadata = {
+      name      = "http-health-check"
+      namespace = local.namespace
+    }
+    spec = {
+      parentRefs = [
+        {
+          name        = var.name
+          sectionName = "http"
+        },
+      ]
+      rules = [
+        {
+          matches = [{ path = { type = "Exact", value = "/" } }]
+          filters = [
+            {
+              type = "ExtensionRef"
+              extensionRef = {
+                group = "gateway.envoyproxy.io"
+                kind  = "HTTPRouteFilter"
+                name  = "health-ok"
+              }
+            },
+          ]
+        },
+      ]
+    }
+  }
+
+  depends_on = [kubernetes_manifest.health_check_route_filter]
+}
+
+resource "kubernetes_manifest" "http_health_check_policy" {
+  count = var.enable_http_healthcheck ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.envoyproxy.io/v1alpha1"
+    kind       = "SecurityPolicy"
+    metadata = {
+      name      = "http-health-check"
+      namespace = local.namespace
+    }
+    spec = {
+      targetRefs = [
+        {
+          "group" = "gateway.networking.k8s.io"
+          "kind"  = "HTTPRoute"
+          "name"  = "http-health-check"
+        },
+      ]
+      authorization = { defaultAction = "Allow" }
+    }
+  }
+
+  depends_on = [kubernetes_manifest.http_health_check]
+}
+
+resource "kubernetes_manifest" "health_check_route_filter" {
+  count = var.enable_http_healthcheck ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.envoyproxy.io/v1alpha1"
+    kind       = "HTTPRouteFilter"
+    metadata = {
+      name      = "health-ok"
+      namespace = local.namespace
+    }
+    spec = {
+      directResponse = {
+        statusCode = 200
+        body = {
+          type   = "Inline"
+          inline = "OK"
+        }
       }
     }
   }

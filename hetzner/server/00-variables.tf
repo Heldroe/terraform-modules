@@ -146,3 +146,8 @@ variable "cluster_name" {
   type        = string
   description = "Cluster name to use as tag and discover peers."
 }
+
+variable "bunnynet_dns_zone_id" {
+  type        = string
+  description = "Bunny.net DNS zone ID to create a record for the server."
+}
