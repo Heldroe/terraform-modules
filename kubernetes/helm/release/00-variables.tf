@@ -28,3 +28,21 @@ variable "create_namespace" {
   default     = true
   description = "Whether to create the namespace."
 }
+
+variable "set_values" {
+  type        = map(string)
+  default     = {}
+  description = "Map of values to set for single values."
+}
+
+variable "yaml_values" {
+  type        = list(string)
+  default     = []
+  description = "List of values in raw YAML."
+}
+
+variable "timeout" {
+  type        = number
+  default     = 300
+  description = "Operation timeout."
+}
