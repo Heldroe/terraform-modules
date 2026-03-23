@@ -74,7 +74,7 @@ variable "service_type" {
 
 variable "external_traffic_policy" {
   type        = string
-  default     = "Cluster"
+  default     = "Local"
   description = "External traffic policy when using LoadBalancer."
 }
 
