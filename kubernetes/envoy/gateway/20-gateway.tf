@@ -31,36 +31,41 @@ resource "kubernetes_manifest" "envoyproxy" {
     spec = {
       provider = {
         type = "Kubernetes"
-        kubernetes = {
-          envoyService = merge(
-            {
-              type = var.service_type
-            },
-            var.service_type == "LoadBalancer" ? {
-              externalTrafficPolicy = var.external_traffic_policy
-            } : {}
-          )
-          envoyDeployment = {
-            name     = "envoy-gateway-${var.name}"
-            replicas = var.replicas
-            pod = {
-              affinity = {
-                podAntiAffinity = {
-                  requiredDuringSchedulingIgnoredDuringExecution = [
-                    {
-                      labelSelector = {
-                        matchLabels = {
-                          "gateway.envoyproxy.io/owning-gateway-name" = var.name
-                        }
-                      }
-                      topologyKey = "kubernetes.io/hostname"
-                    },
-                  ]
+        kubernetes = merge(
+          {
+            envoyService = merge(
+              {
+                type = var.service_type
+              },
+              var.service_type == "LoadBalancer" ? {
+                externalTrafficPolicy = var.external_traffic_policy
+              } : {}
+            )
+          },
+          var.use_daemonset ? {
+            envoyDaemonSet = merge(
+              {
+                name = "envoy-gateway-${var.name}"
+                pod = {
+                  affinity = local.gateway_affinity
                 }
-              }
-            }
-          }
-        }
+              },
+              var.use_host_networking ? local.host_network_patch : {}
+            )
+          } : {},
+          !var.use_daemonset ? {
+            envoyDeployment = merge(
+              {
+                name     = "envoy-gateway-${var.name}"
+                replicas = var.replicas
+                pod = {
+                  affinity = local.gateway_affinity
+                }
+              },
+              var.use_host_networking ? local.host_network_patch : {}
+            )
+          } : {}
+        )
       }
     }
   }
@@ -200,9 +205,10 @@ resource "kubernetes_manifest" "x_forwarded_for" {
     spec = {
       targetRefs = [
         {
-          group = "gateway.networking.k8s.io"
-          kind  = "Gateway"
-          name  = var.name
+          group       = "gateway.networking.k8s.io"
+          kind        = "Gateway"
+          name        = var.name
+          sectionName = "https"
         },
       ]
       clientIPDetection = {

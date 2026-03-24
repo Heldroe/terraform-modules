@@ -72,6 +72,18 @@ variable "service_type" {
   description = "The Kubernetes Service type."
 }
 
+variable "use_daemonset" {
+  type        = bool
+  default     = false
+  description = "Whether to deploy Envoy as DaemonSet instead of Deployment."
+}
+
+variable "use_host_networking" {
+  type        = bool
+  default     = false
+  description = "Whether to listen to the host network directly."
+}
+
 variable "external_traffic_policy" {
   type        = string
   default     = "Local"
