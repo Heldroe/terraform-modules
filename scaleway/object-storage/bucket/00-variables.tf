@@ -20,7 +20,7 @@ variable "region" {
   description = "The bucket region."
 }
 
-variable "read_application_ids" {
+variable "readonly_application_ids" {
   type        = list(string)
   default     = []
   description = "List of application IDs to grant read access to the bucket."

@@ -15,5 +15,5 @@ output "endpoint" {
 
 output "region" {
   description = "The bucket region."
-  value       = scaleway_object_bucket.bucket.region
+  value       = var.region # Outputting the scaleway_object_bucket.bucket value directly is unreliable
 }

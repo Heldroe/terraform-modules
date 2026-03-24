@@ -37,7 +37,7 @@ resource "scaleway_object_bucket_policy" "bucket" {
         Sid    = "AllowReadOnlyAccess"
         Effect = "Allow"
         Principal = {
-          SCW = formatlist("application_id:%s", var.read_application_ids)
+          SCW = formatlist("application_id:%s", var.readonly_application_ids)
         }
         Action = [
           "s3:ListBucket",
