@@ -1,9 +1,9 @@
 resource "bunnynet_pullzone" "zone" {
-  name = data.bunnynet_pullzone.zone.name
+  name = local.name
 
   origin {
-    type = "DnsAccelerate"
-    url  = data.bunnynet_pullzone.zone.origin.url
+    type = var.accelerated_pullzone_id != null ? "DnsAccelerate" : "OriginUrl"
+    url  = var.accelerated_pullzone_id != null ? data.bunnynet_pullzone.zone[0].origin.url : "https://${var.origin_hostname}${var.origin_path}"
 
     verify_ssl          = true
     forward_host_header = false
@@ -17,6 +17,12 @@ resource "bunnynet_pullzone" "zone" {
   block_root_path     = true
   safehop_enabled     = true
   safehop_retry_count = 2
+
+  # S3 authentication
+  s3_auth_enabled = var.s3_auth_enabled
+  s3_auth_key     = var.s3_auth_key
+  s3_auth_region  = var.s3_auth_region
+  s3_auth_secret  = var.s3_auth_secret
 }
 
 resource "bunnynet_pullzone_hostname" "additional" {
@@ -45,24 +51,30 @@ resource "bunnynet_pullzone_shield" "shield" {
 }
 
 resource "bunnynet_pullzone_edgerule" "origin_headers" {
+  count = var.force_send_origin_host_header || local.send_secret_header ? 1 : 0
+
   enabled     = true
   pullzone    = bunnynet_pullzone.zone.id
   description = "Secret extra origin header"
 
-  actions = [
-    {
-      type       = "SetRequestHeader"
-      parameter1 = "Host"
-      parameter2 = var.origin_hostname
-      parameter3 = null # Must be defined
-    },
-    {
-      type       = "SetRequestHeader"
-      parameter1 = var.secret_header_key
-      parameter2 = var.secret_header_value
-      parameter3 = null # Must be defined
-    },
-  ]
+  actions = concat(
+    var.force_send_origin_host_header ? [
+      {
+        type       = "SetRequestHeader"
+        parameter1 = "Host"
+        parameter2 = var.origin_hostname
+        parameter3 = null # Must be defined
+      },
+    ] : [],
+    local.send_secret_header ? [
+      {
+        type       = "SetRequestHeader"
+        parameter1 = var.secret_header_key
+        parameter2 = var.secret_header_value
+        parameter3 = null # Must be defined
+      },
+    ] : []
+  )
 
   match_type = "MatchAny"
   triggers = [
