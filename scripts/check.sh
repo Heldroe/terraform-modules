@@ -14,25 +14,22 @@ export TF_PLUGIN_CACHE_DIR="$REPO_ROOT/.terraform.d/plugin-cache"
 mkdir -p "$TF_PLUGIN_CACHE_DIR"
 
 echo "================================================"
-echo "🚀 Running checks for module: $MODULE_DIR"
+echo " Running checks for module: $MODULE_DIR"
 echo "================================================"
 
 # Enter the module directory
 cd "$MODULE_DIR"
 
-echo "✨ Formatting..."
+echo "- Formatting..."
 terraform fmt -check
 
-echo "🔍 Linting (tflint)..."
+echo "- Linting..."
 # Explicitly point to the root config so tflint finds your custom plugins
 tflint --init --config="$REPO_ROOT/.tflint.hcl" > /dev/null # Silence when plugins are already installed
 tflint --config="$REPO_ROOT/.tflint.hcl"
 
-echo "⚙️ Initializing..."
+echo "- Initializing..."
 terraform init -backend=false -upgrade > /dev/null # Silence noisy stdout
 
-echo "✅ Validating..."
+echo "- Validating..."
 terraform validate
-
-echo "🎉 Success for $MODULE_DIR!"
-echo ""
