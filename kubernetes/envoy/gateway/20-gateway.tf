@@ -46,9 +46,16 @@ resource "kubernetes_manifest" "envoyproxy" {
             envoyDaemonSet = merge(
               {
                 name = "envoy-gateway-${var.name}"
-                pod = {
-                  affinity = local.gateway_affinity
-                }
+                pod = merge(
+                  {
+                    affinity = local.gateway_affinity
+                  },
+                  var.use_host_networking ? {
+                    nodeSelector = {
+                      "node-role.davidguerrero.fr/public-ingress" = "true"
+                    }
+                  } : {}
+                )
               },
               var.use_host_networking ? local.host_network_patch : {}
             )
