@@ -1,6 +1,9 @@
 #cloud-config
 ---
 ssh_pwauth: false
+package_update: true
+packages:
+  - unzip
 write_files:
 - content: |
     token: "${cluster_token}"
@@ -17,6 +20,9 @@ write_files:
     %{ endif }
     node-label:
       - "topology.kubernetes.io/region=${hetzner_location}"
+    %{~ for key, value in node_labels ~}
+      - "${key}=${value}"
+    %{ endfor }
   path: /etc/rancher/k3s/config.yaml
 - content: |
     configs:
@@ -29,7 +35,7 @@ write_files:
   path: /var/lib/rancher/k3s/server/manifests/traefik.yaml.skip # Disable Traefik
 runcmd:
   # Netbird
-   %{ if netbird_setup_key != null }
+  %{ if netbird_setup_key != null }
   - curl -fsSL https://pkgs.netbird.io/install.sh | sh
   - netbird up --setup-key ${netbird_setup_key} --allow-server-ssh --enable-ssh-root
   %{ endif }
@@ -39,7 +45,7 @@ runcmd:
   - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
   - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
   - apt-get update
-  - apt-get install -y tailscale unzip
+  - apt-get install -y tailscale
   - tailscale up --ssh --force-reauth -authkey ${tailscale_auth_key}
   %{ endif }
   # K3S

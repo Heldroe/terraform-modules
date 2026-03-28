@@ -151,3 +151,9 @@ variable "bunnynet_dns_zone_id" {
   type        = string
   description = "Bunny.net DNS zone ID to create a record for the server."
 }
+
+variable "add_public_ingress_labels" {
+  type        = bool
+  default     = false
+  description = "Whether to add the public ingress labels."
+}

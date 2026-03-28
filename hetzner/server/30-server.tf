@@ -28,6 +28,9 @@ resource "hcloud_server" "node" {
       private_ip            = var.private_ip
       cluster_token         = local.cluster_token
       cluster_peer_host     = local.peer_host
+      node_labels = merge(
+        var.add_public_ingress_labels ? { "node-role.davidguerrero.fr/public-ingress" = "true" } : {},
+      )
     }
   )
 
@@ -39,7 +42,8 @@ resource "hcloud_server" "node" {
       # We expose the private IP as label for peers to find it as data.hcloud_servers does not expose networks.
       private_ip = var.private_ip
     },
-    var.agent_mode ? { role = "agent" } : { role = "server" }
+    var.agent_mode ? { role = "agent" } : { role = "server" },
+    var.add_public_ingress_labels ? { "public-ingress" = "true" } : {},
   )
 
   public_net {
