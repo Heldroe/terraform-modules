@@ -46,7 +46,6 @@ jobs:
           tfr-static publish \
             --module "$MODULE_NAME" \
             --base-url "$BASE_URL" \
-            --all \
             --terraform-docs \
             --gzip \
             --html
