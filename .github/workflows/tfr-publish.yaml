@@ -1,0 +1,44 @@
+name: Publish terraform module
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      # tfr-static installation variables
+      TFR_STATIC_VERSION: "0.1.2"
+      TFR_STATIC_REPOSITORY: "Heldroe/tfr-static"
+      TFR_STATIC_ARCH: "linux_amd64"
+
+      # Registry variables
+      BASE_URL: "https://terraform-registry.b-cdn.net"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install tfr-static
+        run: |
+          curl -sL "https://github.com/${TFR_STATIC_REPOSITORY}/releases/download/v${TFR_STATIC_VERSION}/tfr-static_${TFR_STATIC_VERSION}_${TFR_STATIC_ARCH}.tar.gz" -o tfr-static.tar.gz
+          tar -xzf tfr-static.tar.gz
+          chmod +x tfr-static
+          sudo mv tfr-static /usr/local/bin/
+
+      - name: Generate static registry
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          MODULE_NAME="${TAG_NAME%-*}"
+          VERSION="${TAG_NAME##*-}"
+
+          echo "========================================"
+          echo "Tag: $TAG_NAME"
+          echo "Module: $MODULE_NAME"
+          echo "Version: $VERSION"
+          echo "========================================"
+
+          # 4. Execute your publish command dynamically
+          tfr-static publish --module "$MODULE_NAME" --base-url "$BASE_URL"
