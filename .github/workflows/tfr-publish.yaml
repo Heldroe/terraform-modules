@@ -3,7 +3,7 @@ name: Publish terraform module
 on:
   push:
     tags:
-      - '*'
+      - '**'
 
 jobs:
   publish:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install tfr-static
         run: |
