@@ -43,4 +43,10 @@ jobs:
           echo "========================================"
 
           # 4. Execute your publish command dynamically
-          tfr-static publish --module "$MODULE_NAME" --base-url "$BASE_URL"
+          tfr-static publish \
+            --module "$MODULE_NAME" \
+            --base-url "$BASE_URL" \
+            --all \
+            --terraform-docs \
+            --gzip \
+            --html
