@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+        with:
+          fetch-tags: "true"
 
       - name: Install tfr-static
         run: |
