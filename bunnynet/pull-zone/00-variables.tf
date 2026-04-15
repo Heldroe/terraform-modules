@@ -40,6 +40,12 @@ variable "origin_path" {
   description = "The origin path."
 }
 
+variable "block_root_path" {
+  type        = bool
+  default     = true
+  description = "Whether to block access to root path and subdirectories."
+}
+
 variable "force_send_origin_host_header" {
   type        = bool
   default     = false
@@ -70,4 +76,27 @@ variable "s3_auth_region" {
   type        = string
   default     = null
   description = "The region name of the bucket used to authenticate the requests."
+}
+
+variable "edge_rules" {
+  type = map(object({
+    enabled     = optional(bool, true)
+    description = optional(string)
+    priority    = optional(number)
+    match_type  = string
+    triggers = list(object({
+      match_type = string
+      parameter1 = optional(string)
+      parameter2 = optional(string)
+      patterns   = list(string)
+      type       = string
+    }))
+    actions = list(object({
+      parameter1 = optional(string)
+      parameter2 = optional(string)
+      parameter3 = optional(string)
+      type       = string
+    }))
+  }))
+  description = "Map of edge rules to create."
 }

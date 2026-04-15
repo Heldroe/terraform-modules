@@ -14,7 +14,7 @@ resource "bunnynet_pullzone" "zone" {
   }
 
   cache_enabled       = true
-  block_root_path     = true
+  block_root_path     = var.block_root_path
   safehop_enabled     = true
   safehop_retry_count = 2
 
@@ -86,4 +86,17 @@ resource "bunnynet_pullzone_edgerule" "origin_headers" {
       parameter2 = null # Must be defined
     },
   ]
+}
+
+resource "bunnynet_pullzone_edgerule" "custom" {
+  for_each = var.edge_rules
+
+  pullzone = bunnynet_pullzone.zone.id
+
+  enabled     = each.value.enabled
+  description = each.value.description
+  priority    = each.value.priority
+  match_type  = each.value.match_type
+  triggers    = each.value.triggers
+  actions     = each.value.actions
 }
