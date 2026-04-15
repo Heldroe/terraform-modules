@@ -6,9 +6,6 @@ on:
       - main
     tags:
       - "*"
-    paths:
-      - '**/*.tf'
-      - '.tflint.hcl'
   pull_request:
     paths:
       - '**/*.tf'
