@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
     paths:
       - '**/*.tf'
       - '.tflint.hcl'
@@ -76,3 +78,33 @@ jobs:
       - name: Run Checks for ${{ matrix.module }}
         run: |
           ./scripts/check.sh ${{ matrix.module }}
+
+  release:
+    needs: check # Release after passing checks
+    if: startsWith(github.ref, 'refs/tags/') # Only run on tags
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Install tfr-static
+        env:
+          TFR_STATIC_VERSION: "0.1.2"
+          TFR_STATIC_REPOSITORY: "Heldroe/tfr-static"
+          TFR_STATIC_ARCH: "linux_amd64"
+        run: |
+          curl -sL "https://github.com/${TFR_STATIC_REPOSITORY}/releases/download/v${TFR_STATIC_VERSION}/tfr-static_${TFR_STATIC_VERSION}_${TFR_STATIC_ARCH}.tar.gz" -o tfr-static.tar.gz
+          tar -xzf tfr-static.tar.gz
+          chmod +x tfr-static
+          sudo mv tfr-static /usr/local/bin/
+
+      - name: Build terraform registry
+        env:
+          TFR_BASE_URL: "https://terraform-registry.b-cdn.net"
+        run: |
+          tfr-static publish \
+            --base-url ${TFR_BASE_URL} \
+            --all \
+            --terraform-docs \
+            --gzip \
+            --html
