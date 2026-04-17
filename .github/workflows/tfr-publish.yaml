@@ -99,7 +99,7 @@ jobs:
               --url "https://api.bunny.net/purge?url=$ENCODED_URL" \
               --header "AccessKey: $BUNNYNET_API_KEY" \
               --header "Accept: application/json" \
-              --verbose --show-error --fail
+              --silent --show-error --fail
 
             echo ""
 
