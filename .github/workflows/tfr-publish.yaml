@@ -99,16 +99,8 @@ jobs:
               --url "https://api.bunny.net/purge?url=$ENCODED_URL" \
               --header "AccessKey: $BUNNYNET_API_KEY" \
               --header "Accept: application/json" \
-              --verbose
+              --verbose --show-error --fail
 
             echo ""
 
           done < "$INVALIDATIONS_FILE"
-
-      - name: Invalidate CDN paths
-        env:
-          BUNNYNET_API_KEY: ${{ secrets.BUNNYNET_API_KEY }}
-        run: |
-          curl --request POST \
-            --header "AccessKey: $BUNNYNET_API_KEY"
-            --url https://api.bunny.net/purge?url=...
