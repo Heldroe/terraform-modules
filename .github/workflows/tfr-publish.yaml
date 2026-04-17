@@ -42,10 +42,73 @@ jobs:
           echo "Version: $VERSION"
           echo "========================================"
 
-          # 4. Execute your publish command dynamically
+          # TODO: set params as HCL config rather than CLI params
           tfr-static publish \
-            --module "$MODULE_NAME" \
+            --tag "${{ github.ref_name }}" \
             --base-url "$BASE_URL" \
             --terraform-docs \
             --gzip \
-            --html
+            --html \
+            --invalidations-file invalidations.txt
+
+      - name: Upload static registry
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        run: |
+          # Upload modules archives
+          aws s3 cp \
+            --recursive \
+            target/ s3://$BUCKET_NAME/ \
+            --include "*.tar.gz" \
+            --content-type application/gzip
+
+          # Upload the rest of the files (gzipped)
+          aws s3 cp \
+            --recursive \
+            target/ s3://$BUCKET_NAME/ \
+            --endpoint-url https://s3.fr-par.scw.cloud \
+            --exclude "*.tar.gz" \
+            --content-encoding gzip
+
+      - name: Invalidate CDN paths
+        env:
+          BUNNYNET_API_KEY: ${{ secrets.BUNNYNET_API_KEY }}
+          INVALIDATIONS_FILE: "invalidations.txt"
+        run: |
+          # Verify the file actually exists to prevent silent failures
+          if [[ ! -f "$INVALIDATIONS_FILE" ]]; then
+            echo "Error: Invalidations file not found at $INVALIDATIONS_FILE"
+            exit 1
+          fi
+
+          # Invalidate paths
+          while IFS= read -r url || [[ -n "$url" ]]; do
+            if [[ -z "$url" ]]; then
+              continue
+            fi
+
+            # URL-encode the target URL using jq
+            ENCODED_URL=$(jq -rn --arg x "$url" '$x|@uri')
+
+            echo "Purging: $url"
+
+            curl --request POST \
+              --url "https://api.bunny.net/purge?url=$ENCODED_URL" \
+              --header "AccessKey: $BUNNYNET_API_KEY" \
+              --header "Accept: application/json" \
+              --silent --show-error --fail
+
+            echo ""
+
+          done < "$INVALIDATIONS_FILE"
+
+      - name: Invalidate CDN paths
+        env:
+          BUNNYNET_API_KEY: ${{ secrets.BUNNYNET_API_KEY }}
+        run: |
+          curl --request POST \
+            --header "AccessKey: $BUNNYNET_API_KEY"
+            --url https://api.bunny.net/purge?url=...
