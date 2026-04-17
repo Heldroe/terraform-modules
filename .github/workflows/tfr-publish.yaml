@@ -91,7 +91,7 @@ jobs:
             fi
 
             # URL-encode the target URL using jq
-            ENCODED_URL=$(jq -rn --arg x "$url" '$x|@uri')
+            ENCODED_URL=$(jq -rn --arg x "$BASE_URL/$url" '$x|@uri')
 
             echo "Purging: $url"
 
