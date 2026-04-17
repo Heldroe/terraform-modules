@@ -49,7 +49,7 @@ jobs:
             --terraform-docs \
             --gzip \
             --html \
-            --invalidations-file invalidations.txt
+            --invalidation-file invalidations.txt
 
       - name: Upload static registry
         env:
