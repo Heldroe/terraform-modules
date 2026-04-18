@@ -6,6 +6,7 @@
 .terraform.lock.hcl
 
 # Generated files
+invalidations.txt
 target/
 
 # MacOS
