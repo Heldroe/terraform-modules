@@ -6,11 +6,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      # tfr-static installation variables
-      TFR_STATIC_VERSION: "0.1.5"
-      TFR_STATIC_REPOSITORY: "Heldroe/tfr-static"
-      TFR_STATIC_ARCH: "linux_amd64"
-
       # Registry variables
       BASE_URL: "https://tfr.davidguerrero.fr"
 
@@ -20,12 +15,8 @@ jobs:
         with:
           fetch-tags: "true"
 
-      - name: Install tfr-static
-        run: |
-          curl -sL "https://github.com/${TFR_STATIC_REPOSITORY}/releases/download/v${TFR_STATIC_VERSION}/tfr-static_${TFR_STATIC_VERSION}_${TFR_STATIC_ARCH}.tar.gz" -o tfr-static.tar.gz
-          tar -xzf tfr-static.tar.gz
-          chmod +x tfr-static
-          sudo mv tfr-static /usr/local/bin/
+      - name: Setup tfr-static
+        uses: ./.github/actions/setup-tfr-static
 
       - name: Generate static registry
         run: |

@@ -1,0 +1,16 @@
+name: "Setup tfr-static"
+description: "Downloads and installs tfr-static"
+runs:
+  using: "composite"
+  steps:
+    - name: Install tfr-static
+      shell: bash
+      env:
+        VERSION: "0.1.5"
+        REPO: "Heldroe/tfr-static"
+        ARCH: "linux_amd64"
+      run: |
+        curl -sL "https://github.com/${REPO}/releases/download/v${VERSION}/tfr-static_${VERSION}_${ARCH}.tar.gz" -o tfr-static.tar.gz
+        tar -xzf tfr-static.tar.gz
+        chmod +x tfr-static
+        sudo mv tfr-static /usr/local/bin/
