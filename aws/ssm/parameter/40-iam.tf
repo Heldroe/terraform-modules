@@ -1,4 +1,3 @@
-# tflint-ignore: terraform_style_resource_file
 data "aws_iam_policy_document" "write" {
   statement {
     sid = "WriteSSMParameter"
@@ -13,7 +12,6 @@ data "aws_iam_policy_document" "write" {
   }
 }
 
-# tflint-ignore: terraform_style_resource_file
 data "aws_iam_policy_document" "read" {
   statement {
     sid = "ReadSSMParameter"

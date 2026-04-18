@@ -25,13 +25,20 @@ rule "terraform_unused_required_providers" {
 
 plugin "terraform_style" {
   enabled = true
-  version = "0.2.1"
+  version = "0.2.2"
   source  = "github.com/Heldroe/tflint-ruleset-terraform-style"
 }
 
 rule "terraform_style_terraform_file" {
   enabled  = true
   filename = "01-providers"
+}
+
+rule "terraform_style_resource_file" {
+  enabled = true
+  exempt_blocks = {
+    data = ["aws_iam_policy_document"]
+  }
 }
 
 rule "terraform_style_no_provider_argument" {
