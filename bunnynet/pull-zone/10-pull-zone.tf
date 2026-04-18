@@ -7,6 +7,9 @@ resource "bunnynet_pullzone" "zone" {
 
     verify_ssl          = true
     forward_host_header = false
+
+    dns_scheme = var.origin_scheme
+    dns_port   = var.origin_port
   }
 
   routing {

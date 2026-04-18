@@ -40,6 +40,18 @@ variable "origin_path" {
   description = "The origin path."
 }
 
+variable "origin_scheme" {
+  type        = string
+  default     = null
+  description = "The origin scheme. Can only be used for DNS accelerated pull zones."
+}
+
+variable "origin_port" {
+  type        = number
+  default     = null
+  description = "The origin scheme. Can only be used for DNS accelerated pull zone."
+}
+
 variable "enable_smart_cache" {
   type        = bool
   default     = true
@@ -104,5 +116,6 @@ variable "edge_rules" {
       type       = string
     }))
   }))
+  default     = {}
   description = "Map of edge rules to create."
 }
