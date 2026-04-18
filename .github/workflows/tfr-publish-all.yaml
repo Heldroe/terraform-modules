@@ -5,9 +5,6 @@ on: workflow_dispatch
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      # Registry variables
-      BASE_URL: "https://tfr.davidguerrero.fr"
 
     steps:
       - name: Checkout Code
@@ -19,15 +16,7 @@ jobs:
         uses: ./.github/actions/setup-tfr-static
 
       - name: Generate static registry
-        run: |
-          # TODO: set params as HCL config rather than CLI params
-          tfr-static publish \
-            --all \
-            --base-url "$BASE_URL" \
-            --terraform-docs \
-            --gzip \
-            --html \
-            --html-base .tfr-static/base.html
+        run: tfr-static publish --all
 
       - name: Upload static registry
         env:

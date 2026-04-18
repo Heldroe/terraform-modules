@@ -8,9 +8,6 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      # Registry variables
-      BASE_URL: "https://tfr.davidguerrero.fr"
 
     steps:
       - name: Checkout Code
@@ -22,29 +19,7 @@ jobs:
         uses: ./.github/actions/setup-tfr-static
 
       - name: Generate static registry
-        run: |
-          TAG_NAME="${{ github.ref_name }}"
-          MODULE_NAME="${TAG_NAME%-*}"
-          VERSION="${TAG_NAME##*-}"
-
-          echo "========================================"
-          echo "Tag: $TAG_NAME"
-          echo "Module: $MODULE_NAME"
-          echo "Version: $VERSION"
-          echo "========================================"
-
-          # TODO: set params as HCL config rather than CLI params
-          tfr-static publish \
-            --tag "${{ github.ref_name }}" \
-            --base-url "$BASE_URL" \
-            --terraform-docs \
-            --gzip \
-            --html \
-            --html-base .tfr-static/base.html \
-            --invalidation-full-url \
-            --invalidation-url-encode \
-            --invalidation-dirs \
-            --invalidation-file invalidations.txt
+        run: tfr-static publish --tag ${{ github.ref_name }}
 
       - name: Upload static registry
         env:

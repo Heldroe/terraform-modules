@@ -1,0 +1,10 @@
+base_url                = "https://tfr.davidguerrero.fr"
+html                    = true
+gzip                    = true
+terraform_docs          = true
+invalidation_file       = "invalidation.txt"
+invalidation_format     = "txt"
+invalidation_full_url   = true
+invalidation_url_encode = true
+invalidation_dirs       = true
+html_base               = ".tfr-static/base.html"
