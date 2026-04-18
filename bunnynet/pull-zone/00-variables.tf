@@ -40,6 +40,12 @@ variable "origin_path" {
   description = "The origin path."
 }
 
+variable "enable_smart_cache" {
+  type        = bool
+  default     = true
+  description = "Whether to enable Smart Cache."
+}
+
 variable "block_root_path" {
   type        = bool
   default     = true

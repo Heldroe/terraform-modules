@@ -13,7 +13,7 @@ resource "bunnynet_pullzone" "zone" {
     tier = "Standard"
   }
 
-  cache_enabled       = true
+  cache_enabled       = var.enable_smart_cache
   block_root_path     = var.block_root_path
   safehop_enabled     = true
   safehop_retry_count = 2

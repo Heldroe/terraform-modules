@@ -15,7 +15,7 @@ jobs:
       TFR_STATIC_ARCH: "linux_amd64"
 
       # Registry variables
-      BASE_URL: "https://terraform-registry.b-cdn.net"
+      BASE_URL: "https://tfr.davidguerrero.fr"
 
     steps:
       - name: Checkout Code
