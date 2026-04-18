@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # tfr-static installation variables
-      TFR_STATIC_VERSION: "0.1.4"
+      TFR_STATIC_VERSION: "0.1.5"
       TFR_STATIC_REPOSITORY: "Heldroe/tfr-static"
       TFR_STATIC_ARCH: "linux_amd64"
 
@@ -49,6 +49,7 @@ jobs:
             --terraform-docs \
             --gzip \
             --html \
+            --html-base .tfr-static/base.html \
             --invalidation-full-url \
             --invalidation-url-encode \
             --invalidation-dirs \
