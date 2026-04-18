@@ -1,0 +1,76 @@
+name: Publish all modules
+
+on: workflow_dispatch
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      # tfr-static installation variables
+      TFR_STATIC_VERSION: "0.1.5"
+      TFR_STATIC_REPOSITORY: "Heldroe/tfr-static"
+      TFR_STATIC_ARCH: "linux_amd64"
+
+      # Registry variables
+      BASE_URL: "https://tfr.davidguerrero.fr"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-tags: "true"
+
+      - name: Install tfr-static
+        run: |
+          curl -sL "https://github.com/${TFR_STATIC_REPOSITORY}/releases/download/v${TFR_STATIC_VERSION}/tfr-static_${TFR_STATIC_VERSION}_${TFR_STATIC_ARCH}.tar.gz" -o tfr-static.tar.gz
+          tar -xzf tfr-static.tar.gz
+          chmod +x tfr-static
+          sudo mv tfr-static /usr/local/bin/
+
+      - name: Generate static registry
+        run: |
+          # TODO: set params as HCL config rather than CLI params
+          tfr-static publish \
+            --all \
+            --base-url "$BASE_URL" \
+            --terraform-docs \
+            --gzip \
+            --html \
+            --html-base .tfr-static/base.html
+
+      - name: Upload static registry
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        run: |
+          # Pass 1: Sync ONLY modules archives (.tar.gz) and delete orphaned archives
+          aws s3 sync \
+            target/ s3://$BUCKET_NAME/ \
+            --exclude "*" \
+            --include "*.tar.gz" \
+            --content-type application/gzip \
+            --delete
+
+          # Pass 2: Sync everything EXCEPT archives and delete orphaned non-archive files
+          aws s3 sync \
+            target/ s3://$BUCKET_NAME/ \
+            --exclude "*.tar.gz" \
+            --content-encoding gzip \
+            --delete
+
+      - name: Full CDN Cache Purge
+        env:
+          BUNNYNET_API_KEY: ${{ secrets.BUNNYNET_API_KEY }}
+          BUNNYNET_PULL_ZONE_ID: ${{ secrets.BUNNYNET_PULL_ZONE_ID }}
+        run: |
+          echo "Triggering full cache purge for pull zone: $BUNNYNET_PULL_ZONE_ID"
+
+          curl --request POST \
+            --url "https://api.bunny.net/pullzone/$BUNNYNET_PULL_ZONE_ID/purgeCache" \
+            --header "AccessKey: $BUNNYNET_API_KEY" \
+            --header "Accept: application/json" \
+            --silent --show-error --fail
+
+          echo -e "\nPurge triggered successfully."
