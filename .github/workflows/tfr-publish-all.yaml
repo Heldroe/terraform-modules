@@ -37,7 +37,13 @@ jobs:
           aws s3 sync \
             target/ s3://$BUCKET_NAME/ \
             --exclude "*.tar.gz" \
+            --exclude "static/favicon/*" \
             --content-encoding gzip \
+            --delete
+
+          # Pass 3: Sync the favicon directory
+          aws s3 sync \
+            .tfr-static/static/favicon/ s3://$BUCKET_NAME/static/favicon/ \
             --delete
 
       - name: Full CDN Cache Purge
