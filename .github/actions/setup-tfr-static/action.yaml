@@ -6,7 +6,7 @@ runs:
     - name: Install tfr-static
       shell: bash
       env:
-        VERSION: "0.1.6"
+        VERSION: "0.1.7"
         REPO: "Heldroe/tfr-static"
         ARCH: "linux_amd64"
       run: |
