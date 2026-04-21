@@ -9,3 +9,5 @@ All modules are linted with [`tflint`](https://github.com/terraform-linters/tfli
 Additionally, `terraform fmt` and `terraform validate` are also checked.
 
 You can run the linting suite on the module you're currently developing by running `make`.
+
+[![Analytics](https://api.davidguerrero.fr/api/pixels/bxhJC3l2G)](https://github.com/Heldroe/terraform-modules)
