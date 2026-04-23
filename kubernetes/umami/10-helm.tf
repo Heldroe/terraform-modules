@@ -1,5 +1,5 @@
 module "umami" {
-  source  = "tfr.davidguerrero.fr/kubernetes/helm/release"
+  source  = "tfr.davidguerrero.fr/modules/helm-release/kubernetes"
   version = "~> 0.1.0"
 
   release_name     = var.release_name
