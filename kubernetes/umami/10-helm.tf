@@ -1,50 +1,30 @@
-resource "helm_release" "umami" {
-  name = var.release_name
+module "umami" {
+  source  = "tfr.davidguerrero.fr/kubernetes/helm/release"
+  version = "~> 0.1.0"
 
-  namespace        = var.namespace_name
+  release_name     = var.release_name
+  namespace_name   = var.namespace_name
   create_namespace = var.create_namespace
 
   repository = "https://charts.christianhuth.de"
 
-  chart   = "umami"
-  version = var.chart_version
+  chart_name    = "umami"
+  chart_version = var.chart_version
 
-  set = [
-    {
-      name  = "service.port"
-      value = local.service_port
-    },
-    {
-      name  = "postgresql.enabled"
-      value = "false"
-    },
-    {
-      name  = "image.tag"
-      value = var.image_tag
-    },
-    {
-      name  = "umami.collectApiEndpoint"
-      value = local.api_endpoint
-    },
-    {
-      name  = "umami.trackerScriptName"
-      value = local.script_endpoint
-    },
-    {
-      name  = "externalDatabase.auth.database"
-      value = var.database_name
-    },
-    {
-      name  = "externalDatabase.auth.username"
-      value = urlencode(var.database_username) # Helm chart writes it to a Database URL
-    },
-    {
-      name  = "externalDatabase.auth.password"
-      value = urlencode(var.database_password) # Helm chart writes it to a Database URL
-    },
-    {
-      name  = "externalDatabase.hostname"
-      value = var.database_host
-    },
-  ]
+  set_values = {
+    "service.port"                   = local.service_port
+    "postgresql.enabled"             = "false"
+    "image.tag"                      = var.image_tag
+    "umami.collectApiEndpoint"       = local.api_endpoint
+    "umami.trackerScriptName"        = local.script_endpoint
+    "externalDatabase.auth.database" = var.database_name
+    "externalDatabase.auth.username" = urlencode(var.database_username) # Helm chart writes it to a Database URL
+    "externalDatabase.auth.password" = urlencode(var.database_password) # Helm chart writes it to a Database URL
+    "externalDatabase.hostname"      = var.database_host
+  }
+}
+
+moved {
+  from = helm_release.umami
+  to   = module.umami.helm_release.release
 }
