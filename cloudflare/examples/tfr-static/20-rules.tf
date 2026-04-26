@@ -1,10 +1,11 @@
 resource "cloudflare_ruleset" "registry_protocol" {
+  count = var.use_worker ? 0 : 1
+
   zone_id     = var.cloudflare_zone_id
   name        = "Terraform module registry protocol"
   description = "Appends X-Terraform-Get to /download requests."
   kind        = "zone"
   phase       = "http_response_headers_transform"
-
   rules = [
     {
       action = "rewrite"
@@ -23,12 +24,13 @@ resource "cloudflare_ruleset" "registry_protocol" {
 }
 
 resource "cloudflare_ruleset" "index_rewrite" {
+  count = var.use_worker ? 0 : 1
+
   zone_id     = var.cloudflare_zone_id
   name        = "Index file rewrite"
   description = "Fetches index.html when a directory is requested."
   kind        = "zone"
   phase       = "http_request_transform"
-
   rules = [
     {
       action = "rewrite"
@@ -46,12 +48,13 @@ resource "cloudflare_ruleset" "index_rewrite" {
 }
 
 resource "cloudflare_ruleset" "trailing_slash_redirect" {
+  count = var.use_worker ? 0 : 1
+
   zone_id     = var.cloudflare_zone_id
   name        = "Trailing slash redirect"
   description = "Redirects directory paths to include a trailing slash."
   kind        = "zone"
   phase       = "http_request_dynamic_redirect"
-
   rules = [
     {
       action = "redirect"

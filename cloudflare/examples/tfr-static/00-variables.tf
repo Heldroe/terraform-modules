@@ -24,3 +24,9 @@ variable "registry_domain" {
   type        = string
   description = "The registry's domain."
 }
+
+variable "use_worker" {
+  type        = bool
+  default     = false
+  description = "Whether to use a worker script to respect the module registry protocol."
+}
