@@ -10,9 +10,7 @@ resource "aws_cloudfront_function" "registry" {
   runtime = "cloudfront-js-2.0"
   comment = var.description
   publish = true
-  code = templatefile("${path.module}/function/function.js", {
-    registry_domain = var.registry_domain
-  })
+  code    = file("${path.module}/function/function.js")
 }
 
 resource "aws_cloudfront_distribution" "distribution" {

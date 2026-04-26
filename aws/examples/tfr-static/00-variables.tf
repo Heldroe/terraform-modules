@@ -10,12 +10,6 @@ variable "description" {
   description = "Description of the CloudFront distribution."
 }
 
-variable "registry_domain" {
-  type        = string
-  default     = ""
-  description = "The registry's domain."
-}
-
 variable "acl_arn" {
   type        = string
   default     = null
