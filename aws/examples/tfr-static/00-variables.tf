@@ -15,3 +15,9 @@ variable "acl_arn" {
   default     = null
   description = "The Web ACL ARN to use."
 }
+
+variable "use_cloudfront_function" {
+  type        = bool
+  default     = true
+  description = "Whether to use a CloudFront function to respect the registry protocol."
+}
