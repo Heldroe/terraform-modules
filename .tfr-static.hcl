@@ -1,4 +1,5 @@
-base_url                = "https://tfr.davidguerrero.fr"
+base_url                = "https://tfr.davidguerrero.fr"                  # Terraform registry base URL
+repository_url          = "https://github.com/Heldroe/terraform-modules/" # Git forge repository URL
 html                    = true
 gzip                    = true
 terraform_docs          = true
