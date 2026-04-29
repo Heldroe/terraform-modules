@@ -1,6 +1,6 @@
 function handler(event) {
-    var request = event.request;
-    var uri = request.uri;
+    const request = event.request;
+    const uri = request.uri;
 
     // Don't alter the root path
     if (uri === '/') return request;

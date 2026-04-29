@@ -8,7 +8,8 @@ resource "cloudflare_ruleset" "registry_protocol" {
   phase       = "http_response_headers_transform"
   rules = [
     {
-      action = "rewrite"
+      action      = "rewrite"
+      description = "Terraform module registry protocol"
       action_parameters = {
         headers = {
           "X-Terraform-Get" = {
@@ -33,7 +34,8 @@ resource "cloudflare_ruleset" "index_rewrite" {
   phase       = "http_request_transform"
   rules = [
     {
-      action = "rewrite"
+      action      = "rewrite"
+      description = "Index file rewrite"
       action_parameters = {
         uri = {
           path = {
@@ -57,7 +59,8 @@ resource "cloudflare_ruleset" "trailing_slash_redirect" {
   phase       = "http_request_dynamic_redirect"
   rules = [
     {
-      action = "redirect"
+      action      = "redirect"
+      description = "Trailing slash redirect"
       action_parameters = {
         from_value = {
           status_code = 301
