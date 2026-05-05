@@ -48,7 +48,7 @@ module "parseable" {
 }
 
 module "fluentbit" {
-  count = var.install_filebeat ? 1 : 0
+  count = var.install_fluentbit ? 1 : 0
 
   source = "../helm/release" # TODO: use versioned module release
 

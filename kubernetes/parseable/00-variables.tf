@@ -28,7 +28,7 @@ variable "ingestor_ha_replicas" {
   description = "Number of ingestor replicas when running in HA mode."
 }
 
-variable "install_filebeat" {
+variable "install_fluentbit" {
   type        = bool
   default     = false
   description = "Whether to install filebeat to ship Kubernetes logs to Parseable."
