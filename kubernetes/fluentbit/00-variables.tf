@@ -52,3 +52,15 @@ variable "bucket_secret_key" {
   sensitive   = true
   description = "Secret key to write to the bucket."
 }
+
+variable "compactor_image" {
+  type        = string
+  default     = "ghcr.io/heldroe/parquet-compactor:sha-61bb214"
+  description = "The compactor image and tag to use."
+}
+
+variable "compactor_schedule" {
+  type        = string
+  default     = "10 * * * *" # Runs at minute 10 past every hour
+  description = "Cron schedule for the compaction job."
+}

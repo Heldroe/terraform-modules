@@ -38,9 +38,6 @@ module "fluentbit" {
             }
           },
         ]
-        luaScripts = {
-          "schema.lua" = file("${path.module}/lua/schema.lua")
-        }
         config = {
           filters = <<EOF
 [FILTER]
@@ -54,15 +51,41 @@ module "fluentbit" {
     K8S-Logging.Exclude  On
 
 [FILTER]
-    Name            record_modifier
-    Match           *
-    UUID_Key        log_id
+    Name                nest
+    Match               *
+    Operation           lift
+    Nested_under        kubernetes
+    Add_prefix          k8s_
 
 [FILTER]
-    Name            lua
-    Match           *
-    script          /fluent-bit/scripts/schema.lua
-    call            format_for_parquet
+    Name                modify
+    Match               *
+    Rename              k8s_namespace_name  namespace
+    Rename              k8s_pod_name        pod
+    Rename              k8s_container_name  container
+    Rename              k8s_host            node
+
+[FILTER]
+    Name                modify
+    Match               *
+    Add                 namespace  unknown
+    Add                 pod        unknown
+    Add                 container  unknown
+    Add                 node       unknown
+    Add                 log        ""
+
+[FILTER]
+    Name                record_modifier
+    Match               *
+    UUID_Key            id
+    # Allowlist guarantees absolutely no schema drift in Parquet
+    Allowlist_key       time
+    Allowlist_key       id
+    Allowlist_key       namespace
+    Allowlist_key       pod
+    Allowlist_key       container
+    Allowlist_key       node
+    Allowlist_key       log
 EOF
           outputs = <<EOF
 [OUTPUT]
