@@ -18,26 +18,6 @@ module "fluentbit" {
           repository = var.image_repository
           tag        = var.image_tag
         }
-        env = [
-          {
-            name = "AWS_ACCESS_KEY_ID"
-            valueFrom = {
-              secretKeyRef = {
-                name = kubernetes_secret_v1.bucket.metadata[0].name
-                key  = "aws_access_key_id"
-              }
-            }
-          },
-          {
-            name = "AWS_SECRET_ACCESS_KEY"
-            valueFrom = {
-              secretKeyRef = {
-                name = kubernetes_secret_v1.bucket.metadata[0].name
-                key  = "aws_secret_access_key"
-              }
-            }
-          },
-        ]
         config = {
           filters = <<EOF
 [FILTER]
@@ -89,19 +69,112 @@ module "fluentbit" {
 EOF
           outputs = <<EOF
 [OUTPUT]
-    Name s3
-    Match           *
-    Endpoint        ${var.bucket_endpoint}
-    Region          ${var.bucket_region}
-    Bucket          ${var.bucket_name}
-    Total_File_Size 1M
-    Upload_Timeout  1m
-    Use_Put_Object  On
-    Compression     parquet
-    s3_key_format   /raw/containers/year=%Y/month=%m/day=%d/hour=%H/$UUID.parquet
+    Name          forward
+    Match         *
+    Host          ${local.aggregator_name}.${local.namespace}.svc.cluster.local
+    Port          ${local.aggregator_port}
+
+    Require_ack_response True
 EOF
         }
       }
     ),
+  ]
+
+  depends_on = [module.aggregator]
+}
+
+module "aggregator" {
+  source  = "tfr.davidguerrero.fr/modules/helm-release/kubernetes"
+  version = "~> 0.1.0"
+
+  release_name     = "fluent-bit-aggregator"
+  namespace_name   = local.namespace
+  create_namespace = false # Handled by this module
+
+  repository    = "https://fluent.github.io/helm-charts"
+  chart_name    = "fluent-bit"
+  chart_version = var.chart_version
+
+  yaml_values = [
+    yamlencode({
+      kind         = "Deployment"
+      replicaCount = 1
+
+      image = {
+        repository = var.image_repository
+        tag        = var.image_tag
+      }
+
+      env = [
+        {
+          name = "AWS_ACCESS_KEY_ID"
+          valueFrom = {
+            secretKeyRef = {
+              name = kubernetes_secret_v1.bucket.metadata[0].name
+              key  = "aws_access_key_id"
+            }
+          }
+        },
+        {
+          name = "AWS_SECRET_ACCESS_KEY"
+          valueFrom = {
+            secretKeyRef = {
+              name = kubernetes_secret_v1.bucket.metadata[0].name
+              key  = "aws_secret_access_key"
+            }
+          }
+        },
+      ]
+
+      service = {
+        type = "ClusterIP"
+        port = local.metrics_port
+      }
+
+      extraPorts = [
+        {
+          port          = local.aggregator_port
+          containerPort = local.aggregator_port
+          protocol      = "TCP"
+          name          = "forward"
+        },
+      ]
+
+      config = {
+        inputs  = <<EOF
+[INPUT]
+    Name   forward
+    Listen 0.0.0.0
+    Port   ${local.aggregator_port}
+EOF
+        filters = <<EOF
+[FILTER]
+    Name          rewrite_tag
+    Match         kube.*
+    # Rule syntax: $field  regex  new_tag  keep_old_tag
+    # We check the "pod" field (which always exists). If it has any value,
+    # we rename the tag to "containers" and discard the original tag (false).
+    Rule          $pod ^.*$ containers false
+EOF
+        outputs = <<EOF
+[OUTPUT]
+    Name            s3
+    Match           containers
+    Endpoint        ${var.bucket_endpoint}
+    Region          ${var.bucket_region}
+    Bucket          ${var.bucket_name}
+
+    Total_File_Size 5M
+    Upload_Timeout  5m
+
+    store_dir       /tmp/fluent-bit/s3
+
+    Use_Put_Object  On
+    Compression     parquet
+    s3_key_format   /raw/containers/year=%Y/month=%m/day=%d/hour=%H/$UUID.parquet
+EOF
+      }
+    }),
   ]
 }

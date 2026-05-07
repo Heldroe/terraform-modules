@@ -55,7 +55,7 @@ variable "bucket_secret_key" {
 
 variable "compactor_image" {
   type        = string
-  default     = "ghcr.io/heldroe/parquet-compactor:sha-61bb214"
+  default     = "ghcr.io/heldroe/parquet-compactor:sha-07acbb4"
   description = "The compactor image and tag to use."
 }
 

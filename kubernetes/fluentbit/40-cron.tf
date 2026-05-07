@@ -62,6 +62,10 @@ resource "kubernetes_cron_job_v1" "parquet_compactor" {
                 name  = "CATEGORIES"
                 value = "containers"
               }
+              env {
+                name  = "DELETE_RAW_FILES"
+                value = "true"
+              }
 
               # S3 credentials
               env {
