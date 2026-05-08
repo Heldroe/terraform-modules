@@ -15,7 +15,12 @@ output "endpoint" {
 
 output "regional_endpoint" {
   description = "The bucket regional endpoint (without the bucket name)."
-  value       = "https://s3.${var.region}.scw.cloud"
+  value       = "https://${local.regional_endpoint_domain}"
+}
+
+output "regional_endpoint_domain" {
+  description = "The bucket regional endpoint domain (without the bucket name)."
+  value       = local.regional_endpoint_domain
 }
 
 output "region" {
