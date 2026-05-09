@@ -1,30 +1,26 @@
-resource "kubernetes_cron_job_v1" "parquet_compactor" {
+resource "kubernetes_cron_job_v1" "compactor" {
+  for_each = local.compactor_jobs
+
   metadata {
-    name      = "parquet-compactor"
+    name      = each.value.name
     namespace = local.namespace
-    labels = {
-      app = "parquet-compactor"
-    }
+    labels    = { app = local.compactor_app_label }
   }
 
   spec {
-    schedule                      = var.compactor_schedule
+    schedule                      = each.value.schedule
     concurrency_policy            = "Forbid"
     successful_jobs_history_limit = 3
     failed_jobs_history_limit     = 3
 
     job_template {
       metadata {
-        labels = {
-          app = "parquet-compactor"
-        }
+        labels = { app = local.compactor_app_label }
       }
       spec {
         template {
           metadata {
-            labels = {
-              app = "parquet-compactor"
-            }
+            labels = { app = local.compactor_app_label }
           }
           spec {
             restart_policy = "OnFailure"
@@ -35,54 +31,40 @@ resource "kubernetes_cron_job_v1" "parquet_compactor" {
               image_pull_policy = "IfNotPresent"
 
               resources {
-                requests = {
-                  cpu    = "100m"
-                  memory = "100Mi"
-                }
-                limits = {
-                  cpu    = "500m"
-                  memory = "250Mi"
-                }
+                requests = local.compactor_resources.requests
+                limits   = local.compactor_resources.limits
               }
 
-              # Logs config
               env {
-                name  = "BUCKET_NAME"
-                value = var.bucket_name
+                name  = "MODE"
+                value = each.value.mode
               }
               env {
-                name  = "S3_ENDPOINT"
-                value = var.bucket_endpoint
-              }
-              env {
-                name  = "S3_REGION"
-                value = var.bucket_region
-              }
-              env {
-                name  = "CATEGORIES"
-                value = "containers"
-              }
-              env {
-                name  = "DELETE_RAW_FILES"
+                name  = "DELETE_FILES"
                 value = "true"
               }
 
-              # S3 credentials
-              env {
-                name = "AWS_ACCESS_KEY_ID"
-                value_from {
-                  secret_key_ref {
-                    name = kubernetes_secret_v1.bucket.metadata[0].name
-                    key  = "aws_access_key_id"
-                  }
+              # Common env vars
+              dynamic "env" {
+                for_each = local.compactor_common_env
+
+                content {
+                  name  = env.key
+                  value = env.value
                 }
               }
-              env {
-                name = "AWS_SECRET_ACCESS_KEY"
-                value_from {
-                  secret_key_ref {
-                    name = kubernetes_secret_v1.bucket.metadata[0].name
-                    key  = "aws_secret_access_key"
+
+              # S3 credentials
+              dynamic "env" {
+                for_each = local.compactor_secret_env
+
+                content {
+                  name = env.value.name
+                  value_from {
+                    secret_key_ref {
+                      name = kubernetes_secret_v1.bucket.metadata[0].name
+                      key  = env.value.secret_key
+                    }
                   }
                 }
               }

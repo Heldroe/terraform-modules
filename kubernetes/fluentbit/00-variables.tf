@@ -55,12 +55,24 @@ variable "bucket_secret_key" {
 
 variable "compactor_image" {
   type        = string
-  default     = "ghcr.io/heldroe/parquet-compactor:sha-07acbb4"
+  default     = "ghcr.io/heldroe/parquet-compactor:sha-14b9322"
   description = "The compactor image and tag to use."
 }
 
-variable "compactor_schedule" {
+variable "hourly_compactor_schedule" {
   type        = string
-  default     = "10 * * * *" # Runs at minute 10 past every hour
-  description = "Cron schedule for the compaction job."
+  default     = "15 * * * *" # Minute 15 past every hour
+  description = "Cron schedule for the hourly compaction job."
+}
+
+variable "daily_compactor_schedule" {
+  type        = string
+  default     = "30 2 * * *" # 02:30 every day
+  description = "Cron schedule for the daily compaction job."
+}
+
+variable "enable_daily_compactor" {
+  type        = bool
+  default     = false
+  description = "Whether to enable the daily compactor job."
 }
