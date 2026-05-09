@@ -41,6 +41,18 @@ resource "scaleway_object_bucket" "bucket" {
   }
 }
 
+resource "scaleway_object_bucket_server_side_encryption_configuration" "sse" {
+  count = var.enable_sse ? 1 : 0
+
+  bucket = scaleway_object_bucket.bucket.name
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 resource "scaleway_object_bucket_policy" "bucket" {
   bucket = scaleway_object_bucket.bucket.id
 

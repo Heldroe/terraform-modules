@@ -44,6 +44,12 @@ variable "admin_application_ids" {
   description = "List of application IDs to grant admin access to the bucket."
 }
 
+variable "enable_sse" {
+  type        = bool
+  default     = true
+  description = "Whether to enable Server Side Encryption."
+}
+
 variable "lifecycle_rules" {
   type = map(object({
     prefix  = optional(string)
