@@ -117,3 +117,83 @@ variable "secret_headers" {
   default     = {}
   description = "Map of name => secret headers enforced to accept ingress traffic."
 }
+
+variable "http_routes" {
+  type = map(object({
+    hostnames = list(string)
+
+    rules = list(object({
+      matches = optional(list(object({
+        path = optional(object({
+          type  = optional(string, "PathPrefix")
+          value = optional(string, "/")
+        }))
+        })), [
+        {
+          path = {
+            type  = "PathPrefix"
+            value = "/"
+          }
+        },
+      ])
+
+      backendRefs = list(object({
+        name      = string
+        port      = number
+        namespace = optional(string)
+        weight    = optional(number, 1)
+      }))
+
+      filters = optional(list(object({
+        type = string
+
+        requestHeaderModifier = optional(object({
+          add = optional(list(object({
+            name  = string
+            value = string
+          })), [])
+
+          set = optional(list(object({
+            name  = string
+            value = string
+          })), [])
+
+          remove = optional(list(string), [])
+        }))
+
+        responseHeaderModifier = optional(object({
+          add = optional(list(object({
+            name  = string
+            value = string
+          })), [])
+
+          set = optional(list(object({
+            name  = string
+            value = string
+          })), [])
+
+          remove = optional(list(string), [])
+        }))
+
+        requestRedirect = optional(object({
+          scheme     = optional(string)
+          hostname   = optional(string)
+          port       = optional(number)
+          statusCode = optional(number)
+        }))
+
+        urlRewrite = optional(object({
+          hostname = optional(string)
+          path = optional(object({
+            type               = string
+            replaceFullPath    = optional(string)
+            replacePrefixMatch = optional(string)
+          }))
+        }))
+      })), [])
+    }))
+  }))
+
+  default     = {}
+  description = "Map of name => HTTPRoute definition."
+}
