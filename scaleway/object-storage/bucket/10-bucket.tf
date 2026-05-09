@@ -10,6 +10,35 @@ resource "random_string" "suffix" {
 resource "scaleway_object_bucket" "bucket" {
   name   = local.bucket_name
   region = var.region
+
+  dynamic "lifecycle_rule" {
+    for_each = var.lifecycle_rules
+
+    content {
+      id                                     = lifecycle_rule.key
+      prefix                                 = lifecycle_rule.value.prefix
+      enabled                                = lifecycle_rule.value.enabled
+      tags                                   = lifecycle_rule.value.tags
+      abort_incomplete_multipart_upload_days = lifecycle_rule.value.abort_incomplete_multipart_upload_days
+
+      dynamic "expiration" {
+        for_each = lifecycle_rule.value.expiration != null ? [lifecycle_rule.value.expiration] : []
+
+        content {
+          days = expiration.value.days
+        }
+      }
+
+      dynamic "transition" {
+        for_each = lifecycle_rule.value.transition != null ? [lifecycle_rule.value.transition] : []
+
+        content {
+          days          = transition.value.days
+          storage_class = transition.value.storage_class
+        }
+      }
+    }
+  }
 }
 
 resource "scaleway_object_bucket_policy" "bucket" {

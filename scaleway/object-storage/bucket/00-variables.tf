@@ -43,3 +43,21 @@ variable "admin_application_ids" {
   default     = []
   description = "List of application IDs to grant admin access to the bucket."
 }
+
+variable "lifecycle_rules" {
+  type = map(object({
+    prefix  = optional(string)
+    enabled = optional(bool, true)
+    tags    = optional(map(string))
+    expiration = optional(object({
+      days = number
+    }))
+    transition = optional(object({
+      days          = number
+      storage_class = string
+    }))
+    abort_incomplete_multipart_upload_days = optional(number)
+  }))
+  default     = {}
+  description = "Map of lifecycle rules."
+}
