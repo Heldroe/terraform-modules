@@ -10,10 +10,13 @@ locals {
   compactor_app_label = "parquet-compactor"
 
   compactor_common_env = {
-    BUCKET_NAME  = var.bucket_name
-    S3_ENDPOINT  = var.bucket_endpoint
-    S3_REGION    = var.bucket_region
-    CATEGORIES   = "containers"
+    BUCKET_NAME = var.bucket_name
+    S3_ENDPOINT = var.bucket_endpoint
+    S3_REGION   = var.bucket_region
+    CATEGORIES = join(",", [
+      "containers",
+      "events",
+    ])
     DELETE_FILES = "true"
   }
 

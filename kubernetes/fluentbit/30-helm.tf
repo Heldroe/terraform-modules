@@ -84,6 +84,88 @@ EOF
   depends_on = [module.aggregator]
 }
 
+module "cluster_events" {
+  source  = "tfr.davidguerrero.fr/modules/helm-release/kubernetes"
+  version = "~> 0.1.0"
+
+  release_name     = "fluent-bit-cluster-events"
+  namespace_name   = local.namespace
+  create_namespace = false
+
+  repository    = "https://fluent.github.io/helm-charts"
+  chart_name    = "fluent-bit"
+  chart_version = var.chart_version
+
+  yaml_values = [
+    yamlencode({
+      kind         = "Deployment"
+      replicaCount = 1 # This must remain 1 to avoid duplicated logs
+
+      rbac = {
+        create       = true
+        eventsAccess = true
+      }
+
+      image = {
+        repository = var.image_repository
+        tag        = var.image_tag
+      }
+
+      config = {
+        inputs  = <<EOF
+[INPUT]
+    Name   kubernetes_events
+    Tag    kube_events
+EOF
+        filters = <<EOF
+[FILTER]
+    Name          nest
+    Match         kube_events
+    Operation     lift
+    Nested_under  involvedObject
+    Add_prefix    inv_
+
+[FILTER]
+    Name          modify
+    Match         kube_events
+    Rename        inv_namespace  namespace
+    Rename        inv_name       object_name
+    Rename        inv_kind       object_kind
+    Add           namespace      unknown
+    Add           object_name    unknown
+    Add           object_kind    unknown
+    Add           action         unknown
+    Add           reason         unknown
+    Add           message        ""
+    Add           type           unknown
+
+[FILTER]
+    Name          record_modifier
+    Match         kube_events
+    UUID_Key      id
+    # Strict allowlist prevents Parquet schema drift
+    Allowlist_key id
+    Allowlist_key namespace
+    Allowlist_key object_name
+    Allowlist_key object_kind
+    Allowlist_key action
+    Allowlist_key reason
+    Allowlist_key message
+    Allowlist_key type
+EOF
+        outputs = <<EOF
+[OUTPUT]
+    Name                 forward
+    Match                kube_events
+    Host                 ${local.aggregator_name}.${local.namespace}.svc.cluster.local
+    Port                 ${local.aggregator_port}
+    Require_ack_response True
+EOF
+      }
+    }),
+  ]
+}
+
 module "aggregator" {
   source  = "tfr.davidguerrero.fr/modules/helm-release/kubernetes"
   version = "~> 0.1.0"
@@ -152,9 +234,6 @@ EOF
 [FILTER]
     Name          rewrite_tag
     Match         kube.*
-    # Rule syntax: $field  regex  new_tag  keep_old_tag
-    # We check the "pod" field (which always exists). If it has any value,
-    # we rename the tag to "containers" and discard the original tag (false).
     Rule          $pod ^.*$ containers false
 EOF
         outputs = <<EOF
@@ -164,15 +243,26 @@ EOF
     Endpoint        ${var.bucket_endpoint}
     Region          ${var.bucket_region}
     Bucket          ${var.bucket_name}
-
     Total_File_Size 5M
     Upload_Timeout  5m
-
-    store_dir       /tmp/fluent-bit/s3
-
+    store_dir       /tmp/fluent-bit/s3-containers
     Use_Put_Object  On
     Compression     parquet
     s3_key_format   /raw/containers/year=%Y/month=%m/day=%d/hour=%H/$UUID.parquet
+
+[OUTPUT]
+    Name            s3
+    Match           kube_events
+    Endpoint        ${var.bucket_endpoint}
+    Region          ${var.bucket_region}
+    Bucket          ${var.bucket_name}
+    Total_File_Size 5M
+    Upload_Timeout  5m
+    store_dir       /tmp/fluent-bit/s3-events
+    Use_Put_Object  On
+    Compression     parquet
+    s3_key_format   /raw/events/year=%Y/month=%m/day=%d/hour=%H/$UUID.parquet
+    json_date_key   time
 EOF
       }
     }),
