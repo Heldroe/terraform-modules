@@ -29,8 +29,8 @@ locals {
   ]
 
   compactor_resources = {
-    requests = { cpu = "100m", memory = "100Mi" }
-    limits   = { cpu = "500m", memory = "250Mi" }
+    requests = { cpu = "100m", memory = "256Mi" }
+    limits   = { memory = "1Gi" }
   }
 
   compactor_jobs = merge(
