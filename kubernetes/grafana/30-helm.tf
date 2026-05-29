@@ -66,8 +66,7 @@ module "grafana" {
               access    = "proxy"
               isDefault = true
               jsonData = {
-                # Needs to match the vmagent config
-                timeInterval = "10" # Must be a string
+                timeInterval = var.vm_scrape_interval # Needs to match the vmagent config
               }
             },
             {

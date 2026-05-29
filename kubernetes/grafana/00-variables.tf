@@ -57,6 +57,11 @@ variable "vmselect_host" {
   description = "The service hostname to reach vmselect on."
 }
 
+variable "vm_scrape_interval" {
+  type        = string
+  description = "The scrape interval defined in vmagent (e.g. '10s')."
+}
+
 variable "logs_bucket_name" {
   type        = string
   description = "The logs bucket name."
