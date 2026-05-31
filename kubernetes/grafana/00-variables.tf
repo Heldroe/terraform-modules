@@ -29,6 +29,21 @@ variable "image_tag" {
   description = "The image tag."
 }
 
+variable "resources" {
+  type = object({
+    requests = optional(object({
+      cpu    = optional(string)
+      memory = optional(string)
+    }), {})
+    limits = optional(object({
+      cpu    = optional(string)
+      memory = optional(string)
+    }), {})
+  })
+  default     = {}
+  description = "Resource requests & limits."
+}
+
 variable "database_host" {
   type        = string
   description = "Database host."

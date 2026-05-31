@@ -22,6 +22,9 @@ SET http_retries = 3;
 SET http_retry_wait_ms = 500;
 SET http_retry_backoff = 2;
 
+-- Metadata cache
+-- SET parquet_metadata_cache = true;
+
 -- Object storage local caching
 SET cache_httpfs_type='on_disk';
 SET cache_httpfs_glob_cache_entry_timeout_millisec = 60000;

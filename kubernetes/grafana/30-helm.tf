@@ -20,6 +20,8 @@ module "grafana" {
         tag = var.image_tag
       }
 
+      resources = var.resources
+
       envValueFrom = {
         GF_DATABASE_PASSWORD = {
           secretKeyRef = {
