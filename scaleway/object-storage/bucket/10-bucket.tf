@@ -82,6 +82,7 @@ resource "scaleway_object_bucket_policy" "bucket" {
         }
         Action = [
           "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
           "s3:GetObject",
         ]
         Resource = [
@@ -100,6 +101,9 @@ resource "scaleway_object_bucket_policy" "bucket" {
           "s3:GetObject",
           "s3:PutObject",
           "s3:DeleteObject",
+          "s3:ListBucketMultipartUploads",
+          "s3:ListMultipartUploadParts",
+          "s3:AbortMultipartUpload",
         ]
         Resource = [
           scaleway_object_bucket.bucket.name,

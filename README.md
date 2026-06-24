@@ -9,3 +9,7 @@ All modules are linted with [`tflint`](https://github.com/terraform-linters/tfli
 Additionally, `terraform fmt` and `terraform validate` are also checked.
 
 You can run the linting suite on the module you're currently developing by running `make`.
+
+## To-do
+
+* Scaleway bucket: split bucket-level and object-level permissions in the policy (see https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/#action)
