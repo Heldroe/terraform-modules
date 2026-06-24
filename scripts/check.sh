@@ -32,4 +32,15 @@ echo "- Initializing..."
 terraform init -backend=false -upgrade > /dev/null # Silence noisy stdout
 
 echo "- Validating..."
-terraform validate
+VALIDATE_OUTPUT=$(terraform validate -json)
+echo "$VALIDATE_OUTPUT" | jq -r '
+  .diagnostics[] |
+  "\(if .severity == "error" then "ERROR" elif .severity == "warning" then "WARNING" else .severity | ascii_upcase end): \(.summary)\(if .detail != "" then "\n  \(.detail)" else "" end)\(if .range then "\n  at \(.range.filename):\(.range.start.line)" else "" end)"
+'
+ERROR_COUNT=$(echo "$VALIDATE_OUTPUT" | jq '[.diagnostics[] | select(.severity == "error")] | length')
+WARNING_COUNT=$(echo "$VALIDATE_OUTPUT" | jq '[.diagnostics[] | select(.severity == "warning")] | length')
+if [ "$ERROR_COUNT" -gt 0 ] || [ "$WARNING_COUNT" -gt 0 ]; then
+  echo "Validation failed: $ERROR_COUNT error(s), $WARNING_COUNT warning(s)"
+  exit 1
+fi
+echo "Success! The configuration is valid."
