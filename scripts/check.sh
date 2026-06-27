@@ -32,7 +32,7 @@ echo "- Initializing..."
 terraform init -backend=false -upgrade > /dev/null # Silence noisy stdout
 
 echo "- Validating..."
-VALIDATE_OUTPUT=$(terraform validate -json)
+VALIDATE_OUTPUT=$(terraform validate -json) || true
 echo "$VALIDATE_OUTPUT" | jq -r '
   .diagnostics[] |
   "\(if .severity == "error" then "ERROR" elif .severity == "warning" then "WARNING" else .severity | ascii_upcase end): \(.summary)\(if .detail != "" then "\n  \(.detail)" else "" end)\(if .range then "\n  at \(.range.filename):\(.range.start.line)" else "" end)"

@@ -96,9 +96,26 @@ module "zot" {
 
       mountSecret = true
       secretFiles = {
-        htpasswd = <<EOF
-${local.kubernetes_probes_user}:${htpasswd_password.kubernetes_probes.bcrypt}
-        EOF
+        htpasswd = join(
+          "\n",
+          formatlist(
+            "%s:%s",
+            concat(
+              [
+                local.kubernetes_probes_user,
+                local.kubernetes_pull_user,
+              ],
+              keys(var.credentials)
+            ),
+            concat(
+              [
+                htpasswd_password.kubernetes_probes.bcrypt,
+                htpasswd_password.kubernetes_pull.bcrypt,
+              ],
+              values(var.credentials)
+            )
+          )
+        )
       }
       authHeader = base64encode("${local.kubernetes_probes_user}:${random_password.kubernetes_probes.result}")
       pvc = {

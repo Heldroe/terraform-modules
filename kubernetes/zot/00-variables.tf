@@ -22,6 +22,15 @@ variable "create_namespace" {
   description = "Whether to create the namespace."
 }
 
+# Credentials
+
+variable "credentials" {
+  type        = map(string)
+  sensitive   = true
+  default     = {}
+  description = "Map of username => password credentials to create."
+}
+
 # Storage
 
 variable "bucket_name" {
