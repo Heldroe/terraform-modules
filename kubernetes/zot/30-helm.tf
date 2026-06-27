@@ -112,7 +112,9 @@ module "zot" {
                 htpasswd_password.kubernetes_probes.bcrypt,
                 htpasswd_password.kubernetes_pull.bcrypt,
               ],
-              values(var.credentials)
+              [
+                for username, password in var.credentials : htpasswd_password.credentials[username].bcrypt
+              ],
             )
           )
         )

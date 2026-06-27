@@ -31,3 +31,9 @@ resource "random_password" "kubernetes_pull" {
 resource "htpasswd_password" "kubernetes_pull" {
   password = random_password.kubernetes_pull.result
 }
+
+resource "htpasswd_password" "credentials" {
+  for_each = nonsensitive(var.credentials) # username is key
+
+  password = each.value
+}
