@@ -199,31 +199,44 @@ resource "kubernetes_manifest" "http_to_https_redirect" {
   }
 }
 
-resource "kubernetes_manifest" "x_forwarded_for" {
-  count = var.accept_x_forwarded_for ? 1 : 0
+resource "kubernetes_manifest" "client_traffic_policy" {
+  count = anytrue([
+    var.accept_x_forwarded_for,
+    var.buffer_limit != null,
+  ]) ? 1 : 0
 
   manifest = {
     apiVersion = "gateway.envoyproxy.io/v1alpha1"
     kind       = "ClientTrafficPolicy"
     metadata = {
-      name      = "${var.name}-x-forwarded-for"
+      name      = var.name
       namespace = local.namespace
     }
-    spec = {
-      targetRefs = [
-        {
-          group       = "gateway.networking.k8s.io"
-          kind        = "Gateway"
-          name        = var.name
-          sectionName = "https"
-        },
-      ]
-      clientIPDetection = {
-        xForwardedFor = {
-          numTrustedHops = var.x_forwarded_for_trusted_hops
+    spec = merge(
+      {
+        targetRefs = [
+          {
+            group       = "gateway.networking.k8s.io"
+            kind        = "Gateway"
+            name        = var.name
+            sectionName = "https"
+          },
+        ]
+      },
+      var.accept_x_forwarded_for ? {
+        clientIPDetection = {
+          xForwardedFor = {
+            numTrustedHops = var.x_forwarded_for_trusted_hops
+          }
         }
-      }
-    }
+      } : {},
+      var.buffer_limit != null ? {
+        connection = {
+          maxAcceptPerSocketEvent = 1
+          bufferLimit             = var.buffer_limit
+        }
+      } : {},
+    )
   }
 }
 

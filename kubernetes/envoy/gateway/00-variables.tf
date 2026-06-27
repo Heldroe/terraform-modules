@@ -108,6 +108,12 @@ variable "x_forwarded_for_trusted_hops" {
   description = "Number of trusted hops for the X-Forwarded-For header."
 }
 
+variable "buffer_limit" {
+  type        = string
+  default     = null
+  description = "Client traffic policy buffer limit."
+}
+
 variable "secret_headers" {
   type = map(object({
     header = string
@@ -142,6 +148,10 @@ variable "http_routes" {
         port      = number
         namespace = optional(string)
         weight    = optional(number, 1)
+      }))
+
+      timeouts = optional(object({
+        request = string
       }))
 
       filters = optional(list(object({
