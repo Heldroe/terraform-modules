@@ -95,13 +95,12 @@ module "zot" {
       }
 
       mountSecret = true
-      # TODO: generate real credentials
       secretFiles = {
         htpasswd = <<EOF
-admin:$2y$05$zggCKnSI2h9SKPWVr61qN.YThKwMAfMTN1XwEhyBeVbb3OkcHyRmq
+${local.kubernetes_probes_user}:${htpasswd_password.kubernetes_probes.bcrypt}
         EOF
       }
-      authHeader = "YWRtaW46YWRtaW4="
+      authHeader = base64encode("${local.kubernetes_probes_user}:${random_password.kubernetes_probes.result}")
       pvc = {
         create = false
       }
