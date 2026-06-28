@@ -143,3 +143,22 @@ variable "edge_rules" {
   default     = {}
   description = "Map of edge rules to create."
 }
+
+variable "ratelimit_rules" {
+  type = map(object({
+    description = optional(string)
+    conditions = optional(set(object({
+      variable = string
+      operator = string
+      value    = string
+    })), [])
+    evaluation = object({
+      request_count    = number
+      interval_seconds = number
+    })
+    block_duration_seconds = number
+    transformations        = optional(set(string))
+  }))
+  default     = {}
+  description = "Map of rate limit rules to create."
+}

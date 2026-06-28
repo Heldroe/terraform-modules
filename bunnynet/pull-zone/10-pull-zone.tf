@@ -108,3 +108,31 @@ resource "bunnynet_pullzone_edgerule" "custom" {
   triggers    = each.value.triggers
   actions     = each.value.actions
 }
+
+resource "bunnynet_pullzone_ratelimit_rule" "rule" {
+  for_each = var.ratelimit_rules
+
+  pullzone        = bunnynet_pullzone.zone.id
+  name            = each.key
+  description     = each.value.description
+  transformations = each.value.transformations
+
+  dynamic "condition" {
+    for_each = each.value.conditions
+
+    content {
+      variable = condition.value.variable
+      operator = condition.value.operator
+      value    = condition.value.value
+    }
+  }
+
+  limit {
+    requests = each.value.evaluation.request_count
+    interval = each.value.evaluation.interval_seconds
+  }
+
+  response {
+    interval = each.value.block_duration_seconds
+  }
+}
