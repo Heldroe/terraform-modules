@@ -6,5 +6,10 @@ output "groups" {
 output "setup_keys" {
   description = "Created setup keys."
   sensitive   = true
-  value       = { for name, key in var.setup_keys : name => { id = netbird_setup_key.key[name].id } }
+  value = {
+    for name, key in var.setup_keys : name => {
+      id  = netbird_setup_key.key[name].id
+      key = netbird_setup_key.key[name].key
+    }
+  }
 }
