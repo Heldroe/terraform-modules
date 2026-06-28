@@ -21,6 +21,11 @@ resource "bunnynet_pullzone" "zone" {
   safehop_enabled     = true
   safehop_retry_count = 2
 
+  block_post_requests = var.block_post_requests
+  allow_referers      = var.allowed_referers
+  block_referers      = var.blocked_referers
+  block_no_referer    = var.block_empty_referer
+
   # S3 authentication
   s3_auth_enabled = var.s3_auth_enabled
   s3_auth_key     = var.s3_auth_key

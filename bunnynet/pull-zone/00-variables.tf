@@ -64,6 +64,30 @@ variable "block_root_path" {
   description = "Whether to block access to root path and subdirectories."
 }
 
+variable "block_post_requests" {
+  type        = bool
+  default     = false
+  description = "Whether to block POST requests entirely."
+}
+
+variable "allowed_referers" {
+  type        = set(string)
+  default     = []
+  description = "List of allowed referers."
+}
+
+variable "blocked_referers" {
+  type        = set(string)
+  default     = []
+  description = "List of blocked referers."
+}
+
+variable "block_empty_referer" {
+  type        = bool
+  default     = false
+  description = "Whether to block requests without a referer."
+}
+
 variable "force_send_origin_host_header" {
   type        = bool
   default     = false
