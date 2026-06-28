@@ -19,7 +19,35 @@ resource "kubernetes_manifest" "http_route" {
       ]
 
       hostnames = each.value.hostnames
-      rules     = each.value.rules
+      rules = [
+        for rule in each.value.rules : merge(
+          {
+            backendRefs = rule.backendRefs
+          },
+          rule.matches != null ? {
+            matches = rule.matches
+          } : {},
+          length(rule.filters) > 0 ? {
+            filters = [
+              for f in rule.filters : merge(
+                { type = f.type },
+                f.type == "URLRewrite" ? {
+                  urlRewrite = f.urlRewrite
+                } : {},
+                f.type == "RequestRedirect" ? {
+                  requestRedirect = f.requestRedirect
+                } : {},
+                f.type == "RequestHeaderModifier" ? {
+                  requestHeaderModifier = f.requestHeaderModifier
+                } : {},
+                f.type == "ResponseHeaderModifier" ? {
+                  responseHeaderModifier = f.responseHeaderModifier
+                } : {}
+              )
+            ]
+          } : {}
+        )
+      ]
     }
   }
 

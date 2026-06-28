@@ -190,6 +190,10 @@ variable "http_routes" {
           hostname   = optional(string)
           port       = optional(number)
           statusCode = optional(number)
+          path = optional(object({
+            type            = optional(string)
+            replaceFullPath = optional(string)
+          }))
         }))
 
         urlRewrite = optional(object({
