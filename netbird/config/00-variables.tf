@@ -13,3 +13,16 @@ variable "remote_cluster_groups" {
   default     = {}
   description = "Map of NetBird remote cluster groups to create."
 }
+
+variable "setup_keys" {
+  type = map(object({
+    expiry_seconds         = optional(number, 3600)
+    type                   = optional(string, "one-off")
+    allow_extra_dns_labels = optional(bool, true)
+    groups                 = optional(set(string), [])
+    ephemeral              = optional(bool, true)
+    usage_limit            = optional(number, 1)
+  }))
+  default     = {}
+  description = "Setup keys to create."
+}
