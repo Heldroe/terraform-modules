@@ -206,6 +206,14 @@ variable "http_routes" {
         }))
       })), [])
     }))
+
+    backend_traffic_policy = optional(object({
+      timeout = optional(object({
+        http = optional(object({
+          requestTimeout = optional(string)
+        }))
+      }))
+    }))
   }))
 
   default     = {}
