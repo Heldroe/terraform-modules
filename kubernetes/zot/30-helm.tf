@@ -2,13 +2,13 @@ module "zot" {
   source  = "tfr.davidguerrero.fr/modules/helm-release/kubernetes"
   version = "~> 0.1.0"
 
-  release_name     = "zot"
+  release_name     = var.release_name
   namespace_name   = local.namespace
   create_namespace = false
 
   repository = "oci://ghcr.io/project-zot/helm-charts"
 
-  chart_name    = var.release_name
+  chart_name    = "zot"
   chart_version = var.chart_version
 
   yaml_values = [
