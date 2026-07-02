@@ -59,7 +59,11 @@ resource "bunnynet_pullzone_shield" "shield" {
 }
 
 resource "bunnynet_pullzone_edgerule" "origin_headers" {
-  count = var.force_send_origin_host_header || local.send_secret_header ? 1 : 0
+  count = anytrue([
+    var.force_send_origin_host_header,
+    local.send_secret_header,
+    var.send_x_forwarded_host_header,
+  ]) ? 1 : 0
 
   enabled     = true
   pullzone    = bunnynet_pullzone.zone.id
@@ -81,7 +85,15 @@ resource "bunnynet_pullzone_edgerule" "origin_headers" {
         parameter2 = var.secret_header_value
         parameter3 = null # Must be defined
       },
-    ] : []
+    ] : [],
+    var.send_x_forwarded_host_header ? [
+      {
+        type       = "SetRequestHeader"
+        parameter1 = "X-Forwarded-Host"
+        parameter2 = "%%{RequestHeaders.Host}"
+        parameter3 = null # Must be defined
+      },
+    ] : [],
   )
 
   match_type = "MatchAny"

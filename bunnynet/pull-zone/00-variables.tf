@@ -94,6 +94,12 @@ variable "force_send_origin_host_header" {
   description = "Whether to force sending the origin host name as host header."
 }
 
+variable "send_x_forwarded_host_header" {
+  type        = bool
+  default     = false
+  description = "Whether to send the X-Forwarded-Host header to the origin."
+}
+
 variable "s3_auth_enabled" {
   type        = bool
   default     = false
